@@ -1,0 +1,1 @@
+export default function Page(){return <div className='bg-white p-4 rounded border'><h1 className='text-xl font-semibold'>approvals module</h1><p>MVP placeholder with table/search/filter actions.</p></div>}
