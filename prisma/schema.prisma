@@ -1,0 +1,20 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "sqlite" url = env("DATABASE_URL") }
+
+enum Role { ADMIN CP_TEAM CP_MEMBER }
+enum ReqStatus { DRAFT SUBMITTED UNDER_REVIEW APPROVED REJECTED PO_GENERATED CLOSED }
+enum PoStatus { DRAFT GENERATED CANCELLED CLOSED }
+
+model User { id String @id @default(cuid()) email String @unique passwordHash String name String role Role isActive Boolean @default(true) createdAt DateTime @default(now()) requests PurchaseRequest[] approvals ApprovalLog[] audits AuditLog[] }
+model Vendor { id String @id @default(cuid()) name String contactTel String? address1 String? address2 String? address3 String? active Boolean @default(true) vendorItems VendorItem[] po PurchaseOrder[] }
+model Item { id String @id @default(cuid()) region String code String description String unit String? latestUnitPrice Float? active Boolean @default(true) vendorItems VendorItem[] @@unique([region,code]) }
+model VendorItem { id String @id @default(cuid()) region String itemCode String unitPrice Float unit String? currency String @default("HKD") itemId String vendorId String item Item @relation(fields:[itemId],references:[id]) vendor Vendor @relation(fields:[vendorId],references:[id]) @@unique([region,itemCode,vendorId]) }
+model PurchaseRequisition { id String @id @default(cuid()) region String date DateTime prNo String @unique refNo String? currency String amount Float exchangeRate Float taxPercent Float @default(0) usedAmountLocal Float @default(0) description String? linkSubject String? }
+model PurchaseRequest { id String @id @default(cuid()) region String deptCode String status ReqStatus @default(DRAFT) expectedDelivery DateTime? reason String? remarks String? overBudgetReason String? submittedById String submittedBy User @relation(fields:[submittedById],references:[id]) vendorId String vendor Vendor @relation(fields:[vendorId],references:[id]) prId String? pr PurchaseRequisition? @relation(fields:[prId],references:[id]) lines PurchaseRequestLine[] approvals ApprovalLog[] po PurchaseOrder[] createdAt DateTime @default(now()) }
+model PurchaseRequestLine { id String @id @default(cuid()) requestId String request PurchaseRequest @relation(fields:[requestId],references:[id]) itemId String item Item @relation(fields:[itemId],references:[id]) qty Float unit String unitPrice Float currency String amount Float needsReview Boolean @default(false) }
+model ApprovalLog { id String @id @default(cuid()) requestId String request PurchaseRequest @relation(fields:[requestId],references:[id]) actorId String actor User @relation(fields:[actorId],references:[id]) action String comment String? rejectionReason String? createdAt DateTime @default(now()) }
+model PurchaseOrder { id String @id @default(cuid()) poNo String @unique region String date DateTime @default(now()) paymentTerm String? status PoStatus @default(DRAFT) taxPercent Float @default(0) remarks String? requestId String request PurchaseRequest @relation(fields:[requestId],references:[id]) vendorId String vendor Vendor @relation(fields:[vendorId],references:[id]) prId String? pr PurchaseRequisition? @relation(fields:[prId],references:[id]) lines PurchaseOrderLine[] totalLocal Float @default(0) totalUsd Float @default(0) exchangeRate Float @default(7.8) }
+model PurchaseOrderLine { id String @id @default(cuid()) poId String po PurchaseOrder @relation(fields:[poId],references:[id]) itemCode String description String qty Float unit String unitPrice Float discountedUnitPrice Float? amount Float currency String }
+model AuditLog { id String @id @default(cuid()) userId String? user User? @relation(fields:[userId],references:[id]) action String module String recordId String? oldValue String? newValue String? createdAt DateTime @default(now()) }
+model ExcelImportBatch { id String @id @default(cuid()) filename String summaryJson String createdAt DateTime @default(now()) errors ExcelImportRowError[] }
+model ExcelImportRowError { id String @id @default(cuid()) batchId String batch ExcelImportBatch @relation(fields:[batchId],references:[id]) sheet String rowNumber Int reason String rawJson String }

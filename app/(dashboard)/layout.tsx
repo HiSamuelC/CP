@@ -1,0 +1,3 @@
+import Link from 'next/link';
+const nav=['dashboard','items','vendors','prs','requests','approvals','pos','import','reports','audit'];
+export default function DashLayout({children}:{children:React.ReactNode}){return <div className='flex min-h-screen'><aside className='w-60 bg-slate-900 text-white p-4'><h2 className='font-bold mb-4'>CP System</h2>{nav.map(n=><div key={n}><Link href={`/${n}`} className='block py-1 capitalize'>{n}</Link></div>)}</aside><section className='flex-1'><div className='bg-white border-b p-3'>Logged in as demo (Admin)</div><div className='p-4'>{children}</div></section></div>}

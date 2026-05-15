@@ -1,0 +1,1 @@
+export default function Dashboard(){return <div className='grid grid-cols-3 gap-3'>{['Total PR','Used PR','Remaining PR','Open Requests','Pending Approvals','Generated POs'].map(k=><div className='bg-white p-4 border rounded' key={k}><div className='text-sm text-slate-500'>{k}</div><div className='text-xl font-bold'>--</div></div>)}</div>}
